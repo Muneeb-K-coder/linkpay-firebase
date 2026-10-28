@@ -1,0 +1,4 @@
+Django>=5.2,<6.0
+djangorestframework>=3.16
+firebase-admin>=6.8
+python-dotenv>=1.1
