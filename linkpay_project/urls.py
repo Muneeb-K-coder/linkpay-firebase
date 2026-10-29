@@ -1,10 +1,10 @@
-
 from django.contrib import admin
 from django.urls import path
 from links import views
 
 urlpatterns = [
-    path("django-admin/", admin.site.urls),
+
+   path("admin/", admin.site.urls),
 
     path("", views.dashboard_page, name="home"),
 
