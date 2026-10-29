@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continue to your link | LinkPay</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #0b1020;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 480px;
+            padding: 35px 25px;
+            text-align: center;
+            background: #151d32;
+            border: 1px solid #293650;
+            border-radius: 18px;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        p {
+            color: #b8c3d9;
+            line-height: 1.6;
+        }
+
+        .ad-area {
+            min-height: 150px;
+            margin: 25px 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px dashed #64748b;
+            border-radius: 12px;
+            background: #0b1020;
+        }
+
+        .timer {
+            margin: 15px 0;
+            font-size: 42px;
+            font-weight: bold;
+            color: #65e6b5;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 9px;
+            background: #65e6b5;
+            color: #07140f;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .notice {
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card">
+        <h1>LinkPay</h1>
+        <p>Your destination link is being prepared.</p>
+
+        <div class="ad-area">
+            <strong>Advertisement Area</strong>
+            <p>Ad content will appear here after the approved ad code is added.</p>
+        </div>
+
+        <div class="timer" id="timer">5</div>
+        <p id="message">Please wait 5 seconds to continue.</p>
+
+        <button id="continueButton" disabled>
+            Please wait...
+        </button>
+
+        <p class="notice">
+            LinkPay does not require you to click advertisements to continue.
+        </p>
+    </main>
+
+    <script>
+        const destination = "{{ destination_url|escapejs }}";
+
+        const timerElement = document.getElementById("timer");
+        const messageElement = document.getElementById("message");
+        const button = document.getElementById("continueButton");
+
+        let remaining = 5;
+
+        function validDestination(value) {
+            try {
+                const parsed = new URL(value);
+                return parsed.protocol === "https:" ||
+                       parsed.protocol === "http:";
+            } catch {
+                return false;
+            }
+        }
+
+        if (!validDestination(destination)) {
+            timerElement.textContent = "!";
+            messageElement.textContent =
+                "Invalid destination link. Please return to LinkPay.";
+        } else {
+            const countdown = setInterval(() => {
+                remaining--;
+                timerElement.textContent = remaining;
+
+                if (remaining <= 0) {
+                    clearInterval(countdown);
+                    timerElement.textContent = "✓";
+                    messageElement.textContent =
+                        "Your link is ready.";
+                    button.disabled = false;
+                    button.textContent = "Continue to Destination";
+                }
+            }, 1000);
+
+            button.addEventListener("click", () => {
+                if (!button.disabled && validDestination(destination)) {
+                    window.location.assign(destination);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
