@@ -104,6 +104,7 @@ class SupportTicketAdmin(admin.ModelAdmin):
         "status",
         "created_at",
     )
+    list_display_links = ("id",)
     list_filter = ("status", "created_at")
     search_fields = ("email", "owner_uid", "message")
     readonly_fields = (
