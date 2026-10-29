@@ -38,5 +38,9 @@ urlpatterns = [
         name="my_support_tickets",
     ),
 
-    path("s/<str:code>/", views.redirect_short_link, name="short_redirect"),
+    path(
+        "s/<str:code>/",
+        views.redirect_short_link,
+        name="short_redirect",
+    ),
 ]
