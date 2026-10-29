@@ -1,3 +1,4 @@
+
 import json
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
@@ -13,7 +14,13 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.exceptions import AuthenticationFailed
 
 from .authentication import verify_firebase_request
-from .models import ShortLink, ClickEvent, Withdrawal, LedgerEntry
+from .models import (
+    ShortLink,
+    ClickEvent,
+    Withdrawal,
+    LedgerEntry,
+    SupportTicket,
+)
 
 
 DEFAULT_CPM = 0.0
@@ -170,7 +177,7 @@ def create_link(request):
 
     except AuthenticationFailed as exc:
         return JsonResponse(
-            {"error": str(exc.detail)},
+            {"error": str(exc)},
             status=401,
         )
     except ValueError as exc:
@@ -310,7 +317,7 @@ def admin_withdrawals(request):
 
     except AuthenticationFailed as exc:
         return JsonResponse(
-            {"error": str(exc.detail)},
+            {"error": str(exc)},
             status=401,
         )
 
@@ -380,11 +387,83 @@ def review_withdrawal(request, withdrawal_id):
 
     except AuthenticationFailed as exc:
         return JsonResponse(
-            {"error": str(exc.detail)},
+            {"error": str(exc)},
             status=401,
         )
     except ValueError as exc:
         return JsonResponse(
             {"error": str(exc)},
             status=400,
+        )
+
+
+@csrf_exempt
+@require_POST
+def create_support_ticket(request):
+    try:
+        user = _auth(request)
+        data = _body(request)
+
+        message = str(data.get("message", "")).strip()
+
+        if not message:
+            return JsonResponse(
+                {"error": "Please enter your support message."},
+                status=400,
+            )
+
+        if len(message) > 5000:
+            return JsonResponse(
+                {"error": "Message must be 5000 characters or fewer."},
+                status=400,
+            )
+
+        ticket = SupportTicket.objects.create(
+            owner_uid=user["uid"],
+            email=user.get("email", ""),
+            message=message,
+        )
+
+        return JsonResponse({
+            "success": True,
+            "ticket_id": ticket.id,
+            "status": ticket.status,
+            "message": "Your support message has been submitted successfully.",
+        }, status=201)
+
+    except AuthenticationFailed as exc:
+        return JsonResponse({"error": str(exc.detail)}, status=401)
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+
+
+@csrf_exempt
+@require_GET
+def my_support_tickets(request):
+    try:
+        user = _auth(request)
+
+        tickets = SupportTicket.objects.filter(
+            owner_uid=user["uid"]
+        ).order_by("-created_at")
+
+        return JsonResponse({
+            "success": True,
+            "tickets": [
+                {
+                    "id": ticket.id,
+                    "message": ticket.message,
+                    "admin_reply": ticket.admin_reply,
+                    "status": ticket.status,
+                    "created_at": ticket.created_at.isoformat(),
+                    "updated_at": ticket.updated_at.isoformat(),
+                }
+                for ticket in tickets
+            ],
+        })
+
+    except AuthenticationFailed as exc:
+        return JsonResponse(
+            {"error": str(exc.detail)},
+            status=401,
         )

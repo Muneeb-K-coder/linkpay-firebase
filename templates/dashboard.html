@@ -11,6 +11,7 @@
 body{margin:0;background:radial-gradient(ellipse at 80% -10%,#123326 0,transparent 40%),var(--bg);color:var(--white);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:700;background:linear-gradient(135deg,var(--green),#b4ff72);color:#06110b}
+button:disabled{opacity:.55;cursor:not-allowed}
 a{color:var(--green);text-decoration:none}
 .shell{max-width:1400px;margin:auto;padding:24px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:24px}
@@ -36,8 +37,9 @@ a{color:var(--green);text-decoration:none}
 .panel{padding:20px;margin-top:18px}
 .panel h2{font-size:18px;margin:0 0 15px}
 .row{display:flex;gap:10px;align-items:center}
-.row input,.row select,input,textarea{background:#080e0b;border:1px solid #2a3c32;color:var(--white);border-radius:10px;padding:12px;min-width:0}
+.row input,.row select,input,textarea,select{background:#080e0b;border:1px solid #2a3c32;color:var(--white);border-radius:10px;padding:12px;min-width:0}
 .row input{flex:1;width:100%}
+textarea{width:100%;resize:vertical}
 .tablewrap{overflow:auto}
 table{border-collapse:collapse;width:100%;min-width:620px}
 th,td{text-align:left;padding:12px;border-bottom:1px solid #24332b}
@@ -55,8 +57,13 @@ td{font-size:13px}
 .small{font-size:12px}
 .secondary{background:#202d26;color:#dfffee}
 .foot{margin-top:18px;font-size:12px;color:var(--muted)}
+.ticket{border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;overflow-wrap:anywhere}
+.ticket h3{margin:0 0 8px}
+.ticket-message{white-space:pre-wrap;overflow-wrap:anywhere}
+.ticket-reply{white-space:pre-wrap;overflow-wrap:anywhere;background:#080e0b;border:1px solid #26342e;border-radius:10px;padding:12px;margin-top:8px}
+.status-pill{display:inline-block;border:1px solid #315643;border-radius:999px;padding:4px 9px;font-size:12px;color:var(--green)}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.side{display:flex;gap:5px;overflow:auto}.nav{white-space:nowrap;width:auto}.grid2{grid-template-columns:1fr}}
-@media(max-width:520px){.shell{padding:13px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.heading{align-items:flex-start;flex-direction:column}.top{align-items:flex-start;flex-wrap:wrap}.row{flex-wrap:wrap}.row input{flex-basis:100%}}
+@media(max-width:520px){.shell{padding:13px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.heading{align-items:flex-start;flex-direction:column}.top{align-items:flex-start;flex-wrap:wrap}.row{flex-wrap:wrap}.row input{flex-basis:100%}.panel{padding:15px}.auth{margin:5vh 12px}}
 </style>
 </head>
 <body>
@@ -67,19 +74,19 @@ td{font-size:13px}
   <h1 id="authTitle">Welcome back</h1>
   <p class="muted">Sign in to manage your links and analytics.</p>
 
-  <label>Email address</label>
+  <label for="email">Email address</label>
   <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
 
-  <label>Password</label>
+  <label for="password">Password</label>
   <input id="password" type="password" placeholder="At least 6 characters" autocomplete="current-password">
 
   <div id="nameWrap" class="hidden">
-    <label>Display name</label>
+    <label for="displayName">Display name</label>
     <input id="displayName" placeholder="Your name">
   </div>
 
   <button id="authButton" style="width:100%" onclick="authAction()">Login →</button>
-  <p id="authMessage" class="message"></p>
+  <p id="authMessage" class="message" role="status"></p>
 
   <p class="muted">
     <span id="switchText">New to LinkPay?</span>
@@ -162,7 +169,7 @@ td{font-size:13px}
         <div class="panel">
           <h2>Create a short link</h2>
           <div class="row"><input id="longUrl" type="url" placeholder="https://example.com/your-long-url"><button onclick="createLink()">Shorten ↗</button></div>
-          <p id="linkMessage" class="message"></p>
+          <p id="linkMessage" class="message" role="status"></p>
         </div>
         <div class="panel">
           <h2>Your links</h2>
@@ -180,16 +187,16 @@ td{font-size:13px}
         <div class="panel">
           <h2>Request a withdrawal</h2>
           <p class="muted">Withdrawal requests remain disabled until valid ad revenue and balance accounting are configured.</p>
-          <label>Amount (USD)</label>
+          <label for="withdrawAmount">Amount (USD)</label>
           <input id="withdrawAmount" type="number" min="1" step="0.01" placeholder="10.00" style="width:100%;margin:8px 0 14px">
-          <label>Payout method</label>
+          <label for="withdrawMethod">Payout method</label>
           <select id="withdrawMethod" style="width:100%;margin:8px 0 14px">
             <option>Binance</option><option>Payoneer</option><option>Bank Transfer</option>
           </select>
-          <label>Account details</label>
+          <label for="withdrawDetails">Account details</label>
           <input id="withdrawDetails" placeholder="Your payout ID / account details" style="width:100%;margin:8px 0 14px">
           <button onclick="requestWithdrawal()">Submit request</button>
-          <p id="withdrawMessage" class="message"></p>
+          <p id="withdrawMessage" class="message" role="status"></p>
         </div>
         <div class="panel"><h2>Withdrawal history</h2><div id="withdrawRows" class="empty">No requests.</div></div>
       </section>
@@ -211,18 +218,31 @@ td{font-size:13px}
           <p id="profileEmail" class="muted"></p>
           <p class="muted">Authentication is handled by Firebase. Do not share your password or service-account key.</p>
           <button class="secondary" onclick="resetPassword()">Send password reset email</button>
-          <p id="settingsMessage" class="message"></p>
+          <p id="settingsMessage" class="message" role="status"></p>
         </div>
       </section>
 
       <section id="tab-support" class="hidden">
-        <div class="heading"><div><p class="muted">HELP CENTRE</p><h1>Support</h1></div></div>
+        <div class="heading">
+          <div>
+            <p class="muted">HELP CENTRE</p>
+            <h1>Support</h1>
+          </div>
+          <button class="secondary" onclick="loadSupportTickets()">↻ Refresh</button>
+        </div>
+
         <div class="panel">
           <h2>Contact support</h2>
-          <p class="muted">Support ticket submission can be connected to an email or admin ticket queue next.</p>
-          <label>Message</label>
-          <textarea id="supportMessage" rows="4" style="display:block;width:100%;margin:10px 0;background:#080e0b;color:white;border:1px solid #2a3c32;border-radius:10px;padding:12px" placeholder="How can we help?"></textarea>
-          <button onclick="alert('Support ticket backend is not configured yet.');">Send message</button>
+          <p class="muted">Send us a message. You can read the admin's reply here. No email notifications are sent by this page.</p>
+          <label for="supportMessage">Message</label>
+          <textarea id="supportMessage" rows="4" maxlength="5000" style="display:block;width:100%;margin:10px 0" placeholder="How can we help?"></textarea>
+          <button id="supportSubmitButton" onclick="submitSupport()">Send message</button>
+          <p id="supportStatus" class="message" role="status"></p>
+        </div>
+
+        <div class="panel">
+          <h2>Your support tickets</h2>
+          <div id="supportTickets"><p class="muted">Loading your tickets...</p></div>
         </div>
       </section>
 
@@ -243,7 +263,6 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
-// Your LinkPay Firebase Web App configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDUDu3mw8LzmGl68jARInSFSnF6psTuvX4",
   authDomain: "linkpay-project.firebaseapp.com",
@@ -260,10 +279,9 @@ let signupMode = false;
 let idToken = null;
 let currentUser = null;
 
-const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.appId);
-
 try {
-  if (!configured) {
+  if (!firebaseConfig.apiKey || !firebaseConfig.authDomain ||
+      !firebaseConfig.projectId || !firebaseConfig.appId) {
     throw new Error("Firebase configuration is incomplete.");
   }
 
@@ -273,16 +291,17 @@ try {
   onAuthStateChanged(auth, async user => {
     currentUser = user;
 
-    if (user) {
-      try {
-        idToken = await user.getIdToken();
-        showApp();
-        await loadDashboard();
-      } catch (error) {
-        console.error("Authentication state error:", error);
-        showAuth();
-      }
-    } else {
+    if (!user) {
+      showAuth();
+      return;
+    }
+
+    try {
+      idToken = await user.getIdToken();
+      showApp();
+      await loadDashboard();
+    } catch (error) {
+      console.error("Authentication state error:", error);
       showAuth();
     }
   });
@@ -329,9 +348,11 @@ window.authAction = async () => {
   }
 
   try {
+    const button = document.getElementById("authButton");
+    button.disabled = true;
+
     if (signupMode) {
       const name = document.getElementById("displayName").value.trim();
-
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
       if (name) {
@@ -343,6 +364,8 @@ window.authAction = async () => {
   } catch (error) {
     console.error("Firebase authentication error:", error);
     msg.textContent = error.message || "Login or signup failed.";
+  } finally {
+    document.getElementById("authButton").disabled = false;
   }
 };
 
@@ -369,7 +392,6 @@ function showApp() {
     `Welcome, ${currentUser?.displayName || currentUser?.email || "member"}`;
 
   document.getElementById("profileEmail").textContent = currentUser?.email || "";
-
   document.getElementById("refLink").value =
     `${location.origin}/?ref=${currentUser?.uid || ""}`;
 }
@@ -390,10 +412,16 @@ async function api(path, options = {}) {
     }
   });
 
-  const data = await response.json();
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(`Server returned an invalid response (${response.status}).`);
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || "Request failed.");
+    throw new Error(data.error || data.detail || `Request failed (${response.status}).`);
   }
 
   return data;
@@ -418,12 +446,12 @@ window.loadDashboard = async () => {
     renderWithdrawals(d.withdrawals || []);
 
     document.getElementById("dailyRows").innerHTML =
-      `<tr><td>Today</td><td>${s.today_clicks}</td><td>$0.0000</td></tr>
-       <tr><td>Yesterday</td><td>${s.yesterday_clicks}</td><td>$0.0000</td></tr>`;
+      `<tr><td>Today</td><td>${Number(s.today_clicks) || 0}</td><td>$0.0000</td></tr>
+       <tr><td>Yesterday</td><td>${Number(s.yesterday_clicks) || 0}</td><td>$0.0000</td></tr>`;
 
     document.getElementById("chart").innerHTML =
       Array.from({length: 7}, (_, i) =>
-        `<div class="bar" title="Day ${i + 1}" style="height:${Math.max(4, Math.min(100, (i === 6 ? s.today_clicks : s.yesterday_clicks) * 5))}%"></div>`
+        `<div class="bar" title="Day ${i + 1}" style="height:${Math.max(4, Math.min(100, (i === 6 ? Number(s.today_clicks) : Number(s.yesterday_clicks)) * 5))}%"></div>`
       ).join("");
   } catch (error) {
     console.error("Dashboard loading error:", error);
@@ -432,25 +460,57 @@ window.loadDashboard = async () => {
 
 function renderLinks(links) {
   const rows = document.getElementById("linkRows");
+  rows.replaceChildren();
 
   if (!links.length) {
-    rows.innerHTML = '<tr><td colspan="5" class="empty">No links yet. Create your first short link.</td></tr>';
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.className = "empty";
+    cell.textContent = "No links yet. Create your first short link.";
+    row.appendChild(cell);
+    rows.appendChild(row);
     return;
   }
 
-  rows.innerHTML = links.map(link => `
-    <tr>
-      <td><a href="${escapeHtml(link.short_url)}" target="_blank" rel="noopener">${escapeHtml(link.short_url)}</a></td>
-      <td style="max-width:230px;overflow-wrap:anywhere">${escapeHtml(link.original_url)}</td>
-      <td>${Number(link.clicks) || 0}</td>
-      <td>${new Date(link.created_at).toLocaleDateString()}</td>
-      <td><button class="secondary" onclick="copyText('${escapeHtml(link.short_url)}')">Copy</button></td>
-    </tr>
-  `).join("");
+  links.forEach(link => {
+    const row = document.createElement("tr");
+    const shortCell = document.createElement("td");
+    const shortAnchor = document.createElement("a");
+
+    shortAnchor.href = link.short_url;
+    shortAnchor.target = "_blank";
+    shortAnchor.rel = "noopener noreferrer";
+    shortAnchor.textContent = link.short_url;
+    shortCell.appendChild(shortAnchor);
+
+    const destination = document.createElement("td");
+    destination.style.cssText = "max-width:230px;overflow-wrap:anywhere";
+    destination.textContent = link.original_url;
+
+    const clicks = document.createElement("td");
+    clicks.textContent = String(Number(link.clicks) || 0);
+
+    const created = document.createElement("td");
+    created.textContent = link.created_at
+      ? new Date(link.created_at).toLocaleDateString()
+      : "—";
+
+    const action = document.createElement("td");
+    const copyButton = document.createElement("button");
+    copyButton.className = "secondary";
+    copyButton.textContent = "Copy";
+    copyButton.addEventListener("click", () => window.copyText(link.short_url));
+    action.appendChild(copyButton);
+
+    row.append(shortCell, destination, clicks, created, action);
+    rows.appendChild(row);
+  });
 }
 
 function renderWithdrawals(items) {
   const el = document.getElementById("withdrawRows");
+  el.replaceChildren();
 
   if (!items?.length) {
     el.textContent = "No withdrawal requests.";
@@ -459,19 +519,13 @@ function renderWithdrawals(items) {
   }
 
   el.className = "";
-  el.innerHTML = items.map(item =>
-    `<p>#${Number(item.id)} · $${escapeHtml(item.amount)} · ${escapeHtml(item.method)} · <span class="gold">${escapeHtml(item.status)}</span></p>`
-  ).join("");
-}
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[char]));
+  items.forEach(item => {
+    const p = document.createElement("p");
+    p.textContent =
+      `#${Number(item.id)} · $${item.amount} · ${item.method} · ${item.status}`;
+    el.appendChild(p);
+  });
 }
 
 window.createLink = async () => {
@@ -501,8 +555,171 @@ window.createLink = async () => {
 };
 
 window.requestWithdrawal = async () => {
+  const amountInput = document.getElementById("withdrawAmount");
+  const methodInput = document.getElementById("withdrawMethod");
+  const detailsInput = document.getElementById("withdrawDetails");
   const msg = document.getElementById("withdrawMessage");
-  msg.textContent = "Withdrawal requests are not enabled until the backend balance and revenue ledger are configured.";
+  const button = document.querySelector(
+    '#tab-withdraw button[onclick="requestWithdrawal()"]'
+  );
+
+  const amount = Number(amountInput.value);
+  const method = methodInput.value;
+  const account_details = detailsInput.value.trim();
+
+  msg.textContent = "";
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    msg.textContent = "Please enter a valid withdrawal amount.";
+    return;
+  }
+
+  if (!account_details) {
+    msg.textContent = "Please enter your payout account details.";
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    button.textContent = "Submitting...";
+
+    const result = await api("/api/withdrawals/", {
+      method: "POST",
+      body: JSON.stringify({
+        amount: amount.toFixed(4),
+        method,
+        account_details
+      })
+    });
+
+    msg.textContent = result.message || "Withdrawal request submitted successfully.";
+    amountInput.value = "";
+    detailsInput.value = "";
+    await loadDashboard();
+  } catch (error) {
+    msg.textContent = error.message || "Could not submit withdrawal request.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Submit request";
+  }
+};
+
+window.submitSupport = async () => {
+  const input = document.getElementById("supportMessage");
+  const button = document.getElementById("supportSubmitButton");
+  const status = document.getElementById("supportStatus");
+  const message = input.value.trim();
+
+  status.textContent = "";
+
+  if (!message) {
+    status.textContent = "Please enter your message.";
+    return;
+  }
+
+  if (message.length > 5000) {
+    status.textContent = "Your message must be 5000 characters or fewer.";
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+    const result = await api("/api/support/", {
+      method: "POST",
+      body: JSON.stringify({message})
+    });
+
+    status.textContent =
+      `${result.message || "Support ticket submitted."} Ticket #${result.ticket_id}`;
+
+    input.value = "";
+    await window.loadSupportTickets();
+  } catch (error) {
+    status.textContent = error.message || "Could not send your message.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Send message";
+  }
+};
+
+window.loadSupportTickets = async () => {
+  const container = document.getElementById("supportTickets");
+  container.textContent = "Loading tickets...";
+
+  try {
+    const result = await api("/api/support/my-tickets/");
+    const tickets = result.tickets || [];
+
+    container.replaceChildren();
+
+    if (!tickets.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = "You have not submitted any support tickets yet.";
+      container.appendChild(empty);
+      return;
+    }
+
+    tickets.forEach(ticket => {
+      const card = document.createElement("article");
+      card.className = "ticket";
+
+      const title = document.createElement("h3");
+      title.textContent = `Ticket #${ticket.id}`;
+
+      const statusRow = document.createElement("p");
+      statusRow.className = "muted";
+
+      const statusBadge = document.createElement("span");
+      statusBadge.className = "status-pill";
+      statusBadge.textContent = String(ticket.status || "open").replaceAll("_", " ");
+
+      statusRow.append("Status: ", statusBadge);
+
+      const created = document.createElement("p");
+      created.className = "small muted";
+      created.textContent = ticket.created_at
+        ? `Submitted: ${new Date(ticket.created_at).toLocaleString()}`
+        : "";
+
+      const messageLabel = document.createElement("strong");
+      messageLabel.textContent = "Your message";
+
+      const message = document.createElement("p");
+      message.className = "ticket-message";
+      message.textContent = ticket.message || "";
+
+      const replyLabel = document.createElement("strong");
+      replyLabel.textContent = "Admin reply";
+
+      const reply = document.createElement("div");
+      reply.className = "ticket-reply";
+      reply.textContent = ticket.admin_reply
+        ? ticket.admin_reply
+        : "No reply yet. Please check again later.";
+
+      card.append(
+        title,
+        statusRow,
+        created,
+        messageLabel,
+        message,
+        replyLabel,
+        reply
+      );
+
+      container.appendChild(card);
+    });
+  } catch (error) {
+    container.replaceChildren();
+    const errorMessage = document.createElement("p");
+    errorMessage.className = "message";
+    errorMessage.textContent =
+      error.message || "Could not load your support tickets.";
+    container.appendChild(errorMessage);
+  }
 };
 
 window.showTab = (tab, button) => {
@@ -517,6 +734,10 @@ window.showTab = (tab, button) => {
   );
 
   button.classList.add("active");
+
+  if (tab === "support") {
+    window.loadSupportTickets();
+  }
 };
 
 window.copyText = async text => {

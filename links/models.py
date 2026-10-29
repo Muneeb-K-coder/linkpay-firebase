@@ -75,3 +75,28 @@ class Withdrawal(models.Model):
 
     def __str__(self):
         return f"{self.owner_uid}: ${self.amount} ({self.status})"
+
+    
+class SupportTicket(models.Model):
+    STATUS_CHOICES = [
+        ("open", "Open"),
+        ("in_progress", "In Progress"),
+        ("resolved", "Resolved"),
+    ]
+
+    owner_uid = models.CharField(max_length=128, db_index=True)
+    email = models.EmailField(blank=True)
+    message = models.TextField(max_length=5000)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="open",
+        db_index=True,
+    )
+    admin_reply = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Support #{self.pk} - {self.email or self.owner_uid}"
+

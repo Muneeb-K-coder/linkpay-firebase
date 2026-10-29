@@ -1,6 +1,7 @@
 
 from django.contrib import admin
 from .models import ShortLink, ClickEvent, Withdrawal, LedgerEntry
+from .models import SupportTicket
 
 
 @admin.register(ShortLink)
@@ -74,17 +75,34 @@ class WithdrawalAdmin(admin.ModelAdmin):
         "amount",
         "method",
         "account_details",
-        "status",
         "created_at",
+    )
+    fields = (
+        "owner_uid",
+        "amount",
+        "method",
+        "account_details",
+        "status",
         "admin_note",
+        "created_at",
     )
     ordering = ("-created_at",)
 
-    def has_add_permission(self, request):
-        return False
+    
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ("id", "email", "owner_uid", "message", "status", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("email", "owner_uid", "message")
+    readonly_fields = ("owner_uid", "email", "message", "created_at", "updated_at")
+    fields = (
+        "owner_uid",
+        "email",
+        "message",
+        "status",
+        "admin_reply",
+        "created_at",
+        "updated_at",
+    )
+    ordering = ("-created_at",)
 
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
