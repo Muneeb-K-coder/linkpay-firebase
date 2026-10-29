@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
+
+# Security settings
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
     "dev-only-change-me-before-deployment"
@@ -33,6 +35,8 @@ CSRF_TRUSTED_ORIGINS = [
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+
+# Installed applications
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,8 +48,11 @@ INSTALLED_APPS = [
     "links",
 ]
 
+
+# Middleware: WhiteNoise must follow SecurityMiddleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -54,8 +61,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
+# URL configuration
 ROOT_URLCONF = "linkpay_project.urls"
 
+
+# Templates
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -71,8 +82,12 @@ TEMPLATES = [
     },
 ]
 
+
+# WSGI
 WSGI_APPLICATION = "linkpay_project.wsgi.application"
 
+
+# Database: preserve existing SQLite configuration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -80,18 +95,43 @@ DATABASES = {
     }
 }
 
+
+# Password validation
 AUTH_PASSWORD_VALIDATORS = []
 
+
+# Language and timezone
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Karachi"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+
+# Static files
+STATIC_URL = "/static/"
+
+# Collected static files will be stored here
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Source static directory (keep if this folder exists)
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# Modern Django static-file storage configuration
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
+# Default primary key
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+# Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     "DEFAULT_PERMISSION_CLASSES": [],
