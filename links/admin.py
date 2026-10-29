@@ -1,7 +1,12 @@
 
 from django.contrib import admin
-from .models import ShortLink, ClickEvent, Withdrawal, LedgerEntry
-from .models import SupportTicket
+from .models import (
+    ShortLink,
+    ClickEvent,
+    Withdrawal,
+    LedgerEntry,
+    SupportTicket,
+)
 
 
 @admin.register(ShortLink)
@@ -55,7 +60,7 @@ class LedgerEntryAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(self, request):
         return False
 
 
@@ -88,13 +93,26 @@ class WithdrawalAdmin(admin.ModelAdmin):
     )
     ordering = ("-created_at",)
 
-    
+
 @admin.register(SupportTicket)
 class SupportTicketAdmin(admin.ModelAdmin):
-    list_display = ("id", "email", "owner_uid", "message", "status", "created_at")
+    list_display = (
+        "id",
+        "email",
+        "owner_uid",
+        "message",
+        "status",
+        "created_at",
+    )
     list_filter = ("status", "created_at")
     search_fields = ("email", "owner_uid", "message")
-    readonly_fields = ("owner_uid", "email", "message", "created_at", "updated_at")
+    readonly_fields = (
+        "owner_uid",
+        "email",
+        "message",
+        "created_at",
+        "updated_at",
+    )
     fields = (
         "owner_uid",
         "email",
@@ -105,4 +123,3 @@ class SupportTicketAdmin(admin.ModelAdmin):
         "updated_at",
     )
     ordering = ("-created_at",)
-
